@@ -7,9 +7,106 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Project_auto_push_to_gitlab.model;
+using Project_auto_push_to_gitlab.extension;
+using KTCC.Core;
+using static System.Windows.Forms.MonthCalendar;
 
 namespace Project_auto_push_to_gitlab.cls
 {
+    internal static class LoggingData
+    {
+        public static List<cls_LoggingForDB> cls_Loggings = new List<cls_LoggingForDB>();
+
+        public static void InsertLogToDB(cls_LoggingForDB insetData )
+        {
+            string strsql = "";
+            using (KTConnectionController conn = new KTConnectionController())
+            {
+                conn.SettingConnectWithHspArea("KTGH00");
+                strsql = "	                insert into inf100	";
+                strsql += "	                 (	";
+                strsql += "	                 dtflg,item1,itemnme1,	";
+                strsql += "	                 item2,itemnme2,	";
+                strsql += "	                 upop,updte,uptim	";
+                strsql += "	                 )values	";
+                strsql += "	                 (	";
+                strsql += "	                 'Session',:hspArea,:sql_id,	";
+                strsql += "	                 :RunningExePid,:RunningExeName,	";
+                strsql += "	                 'SUPER',:Logvsdte,:Logtimer	";
+                strsql += "	                 )	";
+
+                conn.BeginTransaction();
+                try
+                {
+                    conn.DoSql(strsql, new {
+                        hspArea=insetData.hspArea,
+                        sql_id =insetData.sql_id  ,
+                        RunningExePid=insetData.RunningExePid ,
+                        RunningExeName=insetData.RunningExeName +"$"+ insetData.client_info,
+                        Logvsdte=insetData.Logvsdte,
+                        Logtimer=insetData.Logtimer
+                    });
+                }
+                catch(Exception ex)
+                {
+                    conn.Rollback();
+                    return ;
+                }
+                conn.Commit();
+
+
+            }
+        }
+        public static void InstanceData()
+        {
+            string strsql = "";
+            using (KTConnectionController conn = new KTConnectionController())
+            {
+                conn.SettingConnectWithHspArea("KTGH00");
+                strsql = "	               select * from    inf100 where dtflg='Session' ";
+                strsql += "	             order by updte desc ,uptim desc ";
+                IEnumerable<inf100Data> inf100Datas= new List<inf100Data>();
+             
+                try
+                {
+                    inf100Datas= conn.DoSql<inf100Data>(strsql);
+                }
+                catch (Exception ex)
+                {
+                    return;
+                }
+
+                inf100Datas.ToList().ForEach(x =>
+                {
+                    cls_Loggings.Add(new cls_LoggingForDB()
+                    {
+                        hspArea=x.item1,
+                        sql_id =x.itemnme1,
+                        RunningExeName=x.itemnme2,
+                        RunningExePid=x.item2,
+                        Logvsdte=x.updte,
+                        Logtimer=x.uptim
+                    });
+                });
+
+            }
+        }
+
+        public class inf100Data
+        {
+            public string dtflg { set; get; }
+            public string item1 { set; get; }
+            public string itemnme1 { set; get; }
+            public string item2 { set; get; }
+            public string itemnme2 { set; get; }
+            public string upop { set; get; }
+            public string updte { set; get; }
+            public string uptim { set; get; }
+        }
+
+    }
+
     internal class cls_GetWindowsData
     {
        public static List<portData> listport =new List<portData>();
