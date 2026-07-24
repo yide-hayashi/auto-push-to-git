@@ -116,6 +116,7 @@ namespace Project_auto_push_to_gitlab.model
         public string uptim { get; set; }
     }
         class cls_DBMS_XPLAN_DISPLAY_CURSOR
+    class cls_DBMS_XPLAN_DISPLAY_CURSOR
     {
         public string plan_table_output { get; set; }
     }

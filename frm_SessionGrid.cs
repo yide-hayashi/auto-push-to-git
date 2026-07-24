@@ -80,7 +80,6 @@ namespace Project_auto_push_to_gitlab
             {
                 GetPGAStauts("HPK210");
             });
-
             Task.Run(() =>
             {
                 GetSessionUsingStauts("KTGH00");
@@ -670,7 +669,6 @@ namespace Project_auto_push_to_gitlab
                     runningDate = listSession.runningDate,
                     runningTime = listSession.runningTime
                 }).ToList();
-
             }
 
             if (dtino013_sub.Count > 0)
@@ -707,7 +705,6 @@ namespace Project_auto_push_to_gitlab
             using (KTConnectionController conn = new KTConnectionController())
             {
                 conn.SettingConnectWithHspArea("KTGH00");
-
 
                 conn.DoSql(strsql, new
                 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -9,7 +10,6 @@ namespace INOP1101.cls
     {
         /// <summary>
         /// 1130524 date的擴充
-
         /// </summary>
         /// <param name="aString">回傳民國年月日</param>
         /// <returns></returns>
@@ -21,7 +21,6 @@ namespace INOP1101.cls
 
         /// <summary>
         /// 1130119 date的擴充
-
         /// </summary>
         /// <param name="d"></param>
         /// <returns>回傳民國年月日</returns>
@@ -52,7 +51,6 @@ namespace INOP1101.cls
 
         /// <summary>
         /// 1130119 date的擴充
-
         /// </summary>
         /// <param name="d"></param>
         /// <returns>回傳HH:MM:NN</returns>
@@ -267,5 +265,69 @@ namespace INOP1101.cls
 
             return result;
         }
+
+
+        /// <summary>
+        /// 1141229 對於CLOB BLOB 塞字串用
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string DealwithCLOBForInsertDB(this string str)
+        {
+            string strClob = "";
+            int beSubLength = 0;
+
+            if (str == null) str = "";
+
+            // VB: str = str.Replace("'", "''")
+            str = str.Replace("'", "''");
+
+            if (str.Length > 2999)
+            {
+                var sb = new StringBuilder();
+
+                int index = 0;
+                while (index <= str.Length - 1)
+                {
+                    if (index > 0)
+                    {
+                        sb.Append(" || ");
+                    }
+
+                    if (str.Length <= index + 2999)
+                    {
+                        beSubLength = str.Length - index;
+                    }
+                    else
+                    {
+                        beSubLength = 2999;
+                    }
+
+                    sb.Append("to_clob('");
+                    sb.Append(str.Substring(index, beSubLength));
+                    sb.Append("') ");
+
+                    // VB: index = index + 2998  (Nextで+1される前提)
+                    // ここは while なので同等に +2999 進める
+                    index += 2999;
+                }
+
+                strClob = sb.ToString();
+            }
+            else
+            {
+                strClob = "'" + str + "'";
+            }
+
+            if (strClob == "")
+            {
+                return "''";
+            }
+            else
+            {
+                return strClob;
+            }
+        }
+
     }
 }
