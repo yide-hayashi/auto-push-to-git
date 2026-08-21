@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>Project_auto_push_to_gitlab</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
@@ -13,6 +13,25 @@
 
   <ItemGroup>
     <PackageReference Include="KTCC.Core" Version="2.0.9" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.3.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="SqlOptimizer.Tests\**\*.cs" />
+    <EmbeddedResource Remove="SqlOptimizer.Tests\**\*" />
+    <None Remove="SqlOptimizer.Tests\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="docs\AI_SQL最適化_操作説明書_日台版.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

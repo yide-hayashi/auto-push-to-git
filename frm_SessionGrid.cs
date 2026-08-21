@@ -23,6 +23,10 @@ namespace Project_auto_push_to_gitlab
     public partial class frm_SessionGrid : Form
     {
         bool closeflg = false;
+        private frm_SqlOptimizer? sqlOptimizerForm;
+
+        internal Func<frm_SqlOptimizer>? SqlOptimizerFormFactory { get; set; }
+
         public frm_SessionGrid()
         {
             InitializeComponent();
@@ -796,6 +800,29 @@ namespace Project_auto_push_to_gitlab
         {
             frm_AddWatchProgressList frm =new frm_AddWatchProgressList();
             frm.Show();
+        }
+
+        private void sqlOptimizerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (sqlOptimizerForm == null || sqlOptimizerForm.IsDisposed)
+            {
+                sqlOptimizerForm = SqlOptimizerFormFactory?.Invoke()
+                    ?? new frm_SqlOptimizer();
+                sqlOptimizerForm.FormClosed += (_, _) => sqlOptimizerForm = null;
+            }
+
+            if (!sqlOptimizerForm.Visible)
+            {
+                sqlOptimizerForm.Show();
+            }
+
+            if (sqlOptimizerForm.WindowState == FormWindowState.Minimized)
+            {
+                sqlOptimizerForm.WindowState = FormWindowState.Normal;
+            }
+
+            sqlOptimizerForm.BringToFront();
+            sqlOptimizerForm.Activate();
         }
     }
 

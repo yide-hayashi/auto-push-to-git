@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frm_SessionGrid));
             notifyIcon = new NotifyIcon(components);
             contextMenuStrip = new ContextMenuStrip(components);
+            traySqlOptimizerToolStripMenuItem = new ToolStripMenuItem();
             closeToolStripMenuItem = new ToolStripMenuItem();
             GridforKTGH = new DataGridView();
             WatchModel = new CheckBox();
@@ -40,6 +41,7 @@
             statusStrip1 = new StatusStrip();
             toolStripSplitButton1 = new ToolStripSplitButton();
             sqlidLogginToolStripMenuItem = new ToolStripMenuItem();
+            sqlOptimizerToolStripMenuItem = new ToolStripMenuItem();
             lblmsg = new ToolStripStatusLabel();
             Gridsql_stauts = new DataGridView();
             txtsql_id = new TextBox();
@@ -84,14 +86,21 @@
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new ToolStripItem[] { closeToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { traySqlOptimizerToolStripMenuItem, closeToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip";
-            contextMenuStrip.Size = new Size(106, 26);
+            contextMenuStrip.Size = new Size(179, 48);
+            //
+            // traySqlOptimizerToolStripMenuItem
+            //
+            traySqlOptimizerToolStripMenuItem.Name = "traySqlOptimizerToolStripMenuItem";
+            traySqlOptimizerToolStripMenuItem.Size = new Size(178, 22);
+            traySqlOptimizerToolStripMenuItem.Text = "AI SQL最適化";
+            traySqlOptimizerToolStripMenuItem.Click += sqlOptimizerToolStripMenuItem_Click;
             // 
             // closeToolStripMenuItem
             // 
             closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            closeToolStripMenuItem.Size = new Size(105, 22);
+            closeToolStripMenuItem.Size = new Size(178, 22);
             closeToolStripMenuItem.Text = "Close";
             closeToolStripMenuItem.Click += closeToolStripMenuItem_Click;
             // 
@@ -150,7 +159,7 @@
             // toolStripSplitButton1
             // 
             toolStripSplitButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            toolStripSplitButton1.DropDownItems.AddRange(new ToolStripItem[] { sqlidLogginToolStripMenuItem, addWatchingProgressToolStripMenuItem });
+            toolStripSplitButton1.DropDownItems.AddRange(new ToolStripItem[] { sqlidLogginToolStripMenuItem, addWatchingProgressToolStripMenuItem, sqlOptimizerToolStripMenuItem });
             toolStripSplitButton1.Image = (Image)resources.GetObject("toolStripSplitButton1.Image");
             toolStripSplitButton1.ImageTransparentColor = Color.Magenta;
             toolStripSplitButton1.Name = "toolStripSplitButton1";
@@ -163,6 +172,13 @@
             sqlidLogginToolStripMenuItem.Size = new Size(206, 22);
             sqlidLogginToolStripMenuItem.Text = "Sql_id Loggin";
             sqlidLogginToolStripMenuItem.Click += sqlidLogginToolStripMenuItem_Click;
+            //
+            // sqlOptimizerToolStripMenuItem
+            //
+            sqlOptimizerToolStripMenuItem.Name = "sqlOptimizerToolStripMenuItem";
+            sqlOptimizerToolStripMenuItem.Size = new Size(206, 22);
+            sqlOptimizerToolStripMenuItem.Text = "AI SQL最適化";
+            sqlOptimizerToolStripMenuItem.Click += sqlOptimizerToolStripMenuItem_Click;
             // 
             // lblmsg
             // 
@@ -401,6 +417,7 @@
 
         private NotifyIcon notifyIcon;
         private ContextMenuStrip contextMenuStrip;
+        private ToolStripMenuItem traySqlOptimizerToolStripMenuItem;
         private ToolStripMenuItem closeToolStripMenuItem;
         private DataGridView GridforKTGH;
         private CheckBox WatchModel;
@@ -411,6 +428,7 @@
         private DataGridView Gridsql_stauts;
         private ToolStripSplitButton toolStripSplitButton1;
         private ToolStripMenuItem sqlidLogginToolStripMenuItem;
+        private ToolStripMenuItem sqlOptimizerToolStripMenuItem;
         private TextBox txtsql_id;
         private Label label2;
         private Button Getsql_id;

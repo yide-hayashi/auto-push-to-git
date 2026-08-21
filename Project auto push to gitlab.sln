@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project auto push to gitlab", "Project auto push to gitlab.csproj", "{17D079BE-F609-465C-9507-1C1055267869}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlOptimizer.Tests", "SqlOptimizer.Tests\SqlOptimizer.Tests.csproj", "{63B9E6C3-F753-4973-8623-88E5104B8C5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{17D079BE-F609-465C-9507-1C1055267869}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17D079BE-F609-465C-9507-1C1055267869}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17D079BE-F609-465C-9507-1C1055267869}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63B9E6C3-F753-4973-8623-88E5104B8C5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63B9E6C3-F753-4973-8623-88E5104B8C5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63B9E6C3-F753-4973-8623-88E5104B8C5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63B9E6C3-F753-4973-8623-88E5104B8C5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
