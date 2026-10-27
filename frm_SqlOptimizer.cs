@@ -346,7 +346,9 @@ namespace Project_auto_push_to_gitlab
         /// <param name="selection">已依該模型能力校正的執行選擇，不可為null。</param>
         /// <remarks>
         /// UI：由SetCodexModelCatalog與cmbCodexModel選擇事件間接更新cmbCodexReasoning及cmbCodexSpeed。
+        /// 每次先清除既有推論量與速度選項，避免切換模型時累加上一個模型的項目。
         /// 標準速度default一律加入；其他速度只採用CLI目錄實際回傳值。
+        /// 依selection還原支援的速度；不支援時選取標準速度，且不修改傳入物件。
         /// </remarks>
         private void PopulateCodexCapabilityOptions(
             CodexModelOption model,
@@ -354,6 +356,7 @@ namespace Project_auto_push_to_gitlab
         {
             // 1150820 codex しずくちゃん_gpt-5.6-sol：依模型能力建立推論量與速度清單，且永遠補入標準速度。
             cmbCodexReasoning.Items.Clear();
+            cmbCodexSpeed.Items.Clear();
             if (model.SupportedReasoningEfforts.Count == 0)
             {
                 cmbCodexReasoning.Items.Add("Codex既定値");

@@ -33,6 +33,7 @@
             notifyIcon = new NotifyIcon(components);
             contextMenuStrip = new ContextMenuStrip(components);
             traySqlOptimizerToolStripMenuItem = new ToolStripMenuItem();
+            trayAlertsToolStripMenuItem = new ToolStripMenuItem();
             closeToolStripMenuItem = new ToolStripMenuItem();
             GridforKTGH = new DataGridView();
             WatchModel = new CheckBox();
@@ -42,6 +43,7 @@
             toolStripSplitButton1 = new ToolStripSplitButton();
             sqlidLogginToolStripMenuItem = new ToolStripMenuItem();
             sqlOptimizerToolStripMenuItem = new ToolStripMenuItem();
+            alertsToolStripMenuItem = new ToolStripMenuItem();
             lblmsg = new ToolStripStatusLabel();
             Gridsql_stauts = new DataGridView();
             txtsql_id = new TextBox();
@@ -86,7 +88,7 @@
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new ToolStripItem[] { traySqlOptimizerToolStripMenuItem, closeToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { traySqlOptimizerToolStripMenuItem, trayAlertsToolStripMenuItem, closeToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip";
             contextMenuStrip.Size = new Size(179, 48);
             //
@@ -96,6 +98,9 @@
             traySqlOptimizerToolStripMenuItem.Size = new Size(178, 22);
             traySqlOptimizerToolStripMenuItem.Text = "AI SQL最適化";
             traySqlOptimizerToolStripMenuItem.Click += sqlOptimizerToolStripMenuItem_Click;
+            trayAlertsToolStripMenuItem.Name = "trayAlertsToolStripMenuItem";
+            trayAlertsToolStripMenuItem.Text = "三院區SQL告警";
+            trayAlertsToolStripMenuItem.Click += alertsToolStripMenuItem_Click;
             // 
             // closeToolStripMenuItem
             // 
@@ -159,7 +164,7 @@
             // toolStripSplitButton1
             // 
             toolStripSplitButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            toolStripSplitButton1.DropDownItems.AddRange(new ToolStripItem[] { sqlidLogginToolStripMenuItem, addWatchingProgressToolStripMenuItem, sqlOptimizerToolStripMenuItem });
+            toolStripSplitButton1.DropDownItems.AddRange(new ToolStripItem[] { sqlidLogginToolStripMenuItem, addWatchingProgressToolStripMenuItem, sqlOptimizerToolStripMenuItem, alertsToolStripMenuItem });
             toolStripSplitButton1.Image = (Image)resources.GetObject("toolStripSplitButton1.Image");
             toolStripSplitButton1.ImageTransparentColor = Color.Magenta;
             toolStripSplitButton1.Name = "toolStripSplitButton1";
@@ -179,6 +184,9 @@
             sqlOptimizerToolStripMenuItem.Size = new Size(206, 22);
             sqlOptimizerToolStripMenuItem.Text = "AI SQL最適化";
             sqlOptimizerToolStripMenuItem.Click += sqlOptimizerToolStripMenuItem_Click;
+            alertsToolStripMenuItem.Name = "alertsToolStripMenuItem";
+            alertsToolStripMenuItem.Text = "三院區SQL告警";
+            alertsToolStripMenuItem.Click += alertsToolStripMenuItem_Click;
             // 
             // lblmsg
             // 
@@ -418,6 +426,8 @@
         private NotifyIcon notifyIcon;
         private ContextMenuStrip contextMenuStrip;
         private ToolStripMenuItem traySqlOptimizerToolStripMenuItem;
+        private ToolStripMenuItem trayAlertsToolStripMenuItem;
+        private ToolStripMenuItem alertsToolStripMenuItem;
         private ToolStripMenuItem closeToolStripMenuItem;
         private DataGridView GridforKTGH;
         private CheckBox WatchModel;

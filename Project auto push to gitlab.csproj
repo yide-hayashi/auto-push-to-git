@@ -2,11 +2,21 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PlatformTarget>x64</PlatformTarget>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKBootstrapInitialize>false</WindowsAppSDKBootstrapInitialize>
+    <WindowsAppSdkIncludeVersionInfo>true</WindowsAppSdkIncludeVersionInfo>
+    <WindowsAppSDKDeploymentManagerInitialize>false</WindowsAppSDKDeploymentManagerInitialize>
     <RootNamespace>Project_auto_push_to_gitlab</RootNamespace>
+    <StartupObject>Project_auto_push_to_gitlab.Program</StartupObject>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DefaultItemExcludes>$(DefaultItemExcludes);SqlOptimizer.Tests\**\*</DefaultItemExcludes>
     <FileVersion>0.0.2.0320</FileVersion>
     <AssemblyVersion>0.0.1.115</AssemblyVersion>
   </PropertyGroup>
@@ -15,6 +25,7 @@
     <PackageReference Include="KTCC.Core" Version="2.0.9" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.3.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
   </ItemGroup>
 
   <ItemGroup>

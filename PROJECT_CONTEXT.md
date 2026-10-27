@@ -1,6 +1,6 @@
 # Project Context: AutoCallGit
 
-最終更新日: 2026-08-20  
+最終更新日: 2026-10-06
 分析基準コミット: `5c4c875` (`main`)  
 対象ソリューション: `Project auto push to gitlab.sln`
 
@@ -14,11 +14,12 @@
 
 ## 1. 一言でいうと
 
-Windows通知領域に常駐し、次の三つの機能群をWinFormsへ集約した社内向け運用ツール。
+Windows通知領域に常駐し、次の四つの機能群をWinFormsへ集約した社内向け運用ツール。
 
 1. Visual Studioで開いているGitプロジェクトを監視し、Visual Studio終了後にVS Codeを開いてローカルHTTPサービスへGit処理を依頼する。
 2. OracleのSession、PGA、リソース使用量、SQL_ID、実行計画を照会し、参照履歴と実行計画をDBへ保存する。
 3. ユーザー承認済みのOracle SELECTを、ローカルMCP経由のAI AgentでEXPLAIN比較し、選択候補だけを実測する。
+4. 三院区の登録済みSELECTを台北時間で毎週・毎日・毎時間から選んで実行し、異常・取得エラーをWindows通知と暗号化履歴で確認する。
 
 重要: このリポジトリ自身は `git add`、`git commit`、`git push` を実行しない。Git処理の実体は、`127.0.0.1:3000-3100` 上の `/OpenGit` を提供する外部プロセスに委譲されている。
 
@@ -28,12 +29,13 @@ Windows通知領域に常駐し、次の三つの機能群をWinFormsへ集約�
 |---|---|
 | アプリ形式 | Windows Forms / `WinExe` |
 | ソリューション | 1ソリューション、アプリ＋テストの2プロジェクト |
-| Target Framework | `net8.0-windows` |
+| Target Framework | `net8.0-windows10.0.19041.0`（.NET 8維持） |
+| 実行環境 | `win-x64`、Windows 10 1809以降／Windows 11、未パッケージ・一般権限 |
 | Nullable | 有効 |
 | Implicit Usings | 有効 |
 | FileVersion | `0.0.2.0320` |
 | AssemblyVersion | `0.0.1.115` |
-| 直接NuGet依存 | `KTCC.Core 2.0.9`、`ModelContextProtocol.AspNetCore 1.3.0`、`System.Security.Cryptography.ProtectedData 8.0.0` |
+| 直接NuGet依存 | `KTCC.Core 2.0.9`、`ModelContextProtocol.AspNetCore 1.3.0`、`System.Security.Cryptography.ProtectedData 8.0.0`、`Microsoft.WindowsAppSDK 2.5.1` |
 | Framework参照 | `Microsoft.AspNetCore.App` |
 | 主な推移依存 | `Dapper 2.0.123`、`Oracle.ManagedDataAccess.Core 3.21.50` |
 | KTCC.Core取得元 | 端末側NuGet設定の社内フィード `https://nuget.ktgh.com.tw/api/v3/index.json` |
@@ -62,7 +64,7 @@ dotnet build "Project auto push to gitlab.sln" --no-restore --configuration Debu
 
 | パス | 責務 |
 |---|---|
-| `Program.cs` | WinForms初期化と `frm_SessionGrid` 起動 |
+| `Program.cs` | 単一起動、通知受付、二つのRuntimeと `frm_SessionGrid` の起動・終了統合 |
 | `frm_SqlOptimizer.*` | AI SQL最適化の入力、Codexモデル・推論量・速度選択、承認、反復履歴、計画・分析・結果プレビュー |
 | `frm_SessionGrid.cs` | メイン画面、Oracle照会、プロセス監視、VS Code起動、HTTP通知、履歴・実行計画保存 |
 | `frm_SessionGrid.Designer.cs` | メイン画面レイアウトとイベント配線 |
@@ -83,6 +85,11 @@ dotnet build "Project auto push to gitlab.sln" --no-restore --configuration Debu
 | `SqlOptimizer/Codex` | DPAPI Token、CLI検出・起動、app-server `model/list`、動的能力選択、JSONL、安全なMCP設定確認 |
 | `SqlOptimizer/Persistence` | 機密値を除いたセッションJSONとCodex実行選択・モデル一覧の原子的保存 |
 | `SqlOptimizer.Tests` | Core、Persistence、Codex境界、偽Oracle結合テスト |
+| `Alerts/Core` | 告警モデル、台北の毎週・毎日・毎時間の予定、パラメーターと外部境界 |
+| `Alerts/Application` | 単一実行キュー、設定と取得履歴、画面集計、Composition Root |
+| `Alerts/Infrastructure` | `KTCC`のSELECT実行、DPAPI保存、通知、単一起動IPC、匿名化Log |
+| `Alerts/Presentation` | B案総覧・ルール編集・Designer対応院区カード |
+| `docs/ALERTS.md` | 告警操作、パラメーター、配布・運用と検証手順 |
 | `docs/SQL_OPTIMIZER_AGENT.md` | 利用手順、安全境界、外部Agent設定、障害対応 |
 | `docs/AI_SQL最適化_操作説明書_日台版.docx` | 日本語／台灣華語の利用者向け画面付き操作説明書 |
 | `docs/AI_SQL最適化_操作説明書_日台版.sources` | Word原稿JSON、実フォーム安全キャプチャ、日台フロー図、再生成・検証スクリプト |
@@ -106,13 +113,15 @@ Program
        └─ frmText
 ```
 
-Repository層、Service層、DI、設定クラス、インターフェース、構造化ログはない。メインフォームがUI、DB、OSプロセス、ファイルシステム、HTTPの責務を同時に持つ。
+既存メインフォームはUI、DB、OSプロセス、ファイルシステム、HTTPの責務を同時に持つ。SQL最適化と告警は別機能としてサービス・契約・外部処理・画面を分離しており、既存画面全体の再構成はしていない。
 
 ## 5. 起動と終了
 
 ### 起動
 
-`Program.cs:8-15` から `frm_SessionGrid` を起動し、`frm_SessionGrid.cs:31-91` で次を行う。
+現在の入口は、通知登録→Windowsユーザー単一起動確認→既存SQL最適化Runtime→告警Runtime→主画面の順。起動オブジェクトは`Project_auto_push_to_gitlab.Program`を明示する。第二実例は履歴ID／主画面表示要求だけを既存実例へ転送し、MCPやDB処理を開始しない。F5で既存実例がある場合は転送せず、通知領域のCloseで正式終了してから現在のビルドを起動する案内を表示する。詳細は20節を参照。
+
+`Program.Main` から `frm_SessionGrid` を起動し、既存の `frm_SessionGrid_Load` で次を行う。
 
 1. タスクバーから隠し、フォーム自体も非表示にする。
 2. 通知領域アイコンを表示する。
@@ -121,13 +130,14 @@ Repository層、Service層、DI、設定クラス、インターフェース、�
 5. 10秒周期の `devenv.exe` 監視Taskを開始する。
 6. KTGH00とHPK210のSession、PGA、Session使用量を各1回ずつバックグラウンド取得する。
 
-通常の初期状態は「画面非表示、通知領域に常駐」。
+通常の初期状態は「画面非表示、通知領域に常駐」。Debugger接続中の初回起動（F5）は`frm_SessionGrid`を表示する。
 
 ### 表示と終了
 
 - 通知アイコンのダブルクリック: メイン画面を表示する (`frm_SessionGrid.cs:391-399`)。
 - ウィンドウの×: 終了をキャンセルし、通知領域へ戻す (`401-414`)。
-- 通知領域メニューのClose: Visual Studio監視を停止し、フォームを閉じる (`372-389`)。
+- 通知領域メニューのClose: 告警の取消・Rollback・接続解放を待ち、Visual Studio監視を停止してフォームを閉じる。
+- 主画面と通知領域メニューの「三院區SQL告警」: B案総覧を開く。告警画面の×は画面だけを閉じ、定期実行は継続する。
 
 Session監視とPGA監視には共通の終了用CancellationTokenがなく、Close時に完全停止が保証されない。
 
@@ -603,3 +613,40 @@ Draft -> Approved -> Running -> AwaitingUser -> Accepted
 運用と障害対応の詳細は `docs/SQL_OPTIMIZER_AGENT.md`、利用者向けの画面手順は `docs/AI_SQL最適化_操作説明書_日台版.docx` を読む。
 
 Word資料は `docs/AI_SQL最適化_操作説明書_日台版.sources/manual-content.json` を原稿とし、同フォルダの `capture_actual_form.ps1` で安全な架空データの実フォーム2状態、`generate_manual.ps1` で日台フロー図とDOCXを再生成する。本文変更時は日本語／台灣華語の両方を更新し、生成時のOpen XML妥当性、外部Relationship不在、マクロ不在に加えてWordでの目視確認も行う。
+
+## 20. 三院区定期SQL告警（承認済みB案）
+
+### 起動・終了と外部依存
+
+`Program.Main` がWindows App Runtimeを明示初期化し、AppNotificationManagerの受信ハンドラーを登録する。CurrentUser専用のMutexとPipeで単一起動を確認し、第二実例は履歴Guidまたは主画面表示要求だけを転送して終了する。F5は既存実例へ転送せず、正式終了の案内を表示して二重実行を防ぐ。第一実例だけが既存SQL最適化Runtimeと告警Runtimeを開始する。主画面作成前の要求は保留し、既存Loadの終了後にBeginInvokeでUIスレッドへ渡して`frm_SessionGrid.ShowStartupWindowAsync`を呼ぶ。Loadで画面を隠すため、発生しない場合があるShownは起動受付の条件にしない。通知Guidは既存の`ShowAlertsAsync`へ渡し、通常の要求は`ShowMainWindow`で`frm_SessionGrid`を表示する。初回F5も主画面要求を積む。
+
+メイン・通知領域メニューの「三院區SQL告警」から `FrmAlerts` を開く。Designer対応の総覧Form、ルール編集Form、院区カードUserControlは無引数建構式とDesigner／resxの組み合わせを維持し、建構時にDBやファイルへ接続しない。通常の画面閉鎖・主画面の非表示では排程を継続し、正式CloseとProgram finallyは同じ終了Taskで取消・Rollback・接続解放を待つ。
+
+対象は.NET 8、`net8.0-windows10.0.19041.0`、最小OS 10.0.17763（Windows 10 1809）、RID／PlatformTarget `win-x64`／x64。未パッケージ・一般権限で通知を使用し、Windows App Runtime 2.5は端末へ別途導入する。Runtime不足・通知無効でも既存機能と履歴保存は継続し、通知の失敗状態を表示する。配布と操作は `docs/ALERTS.md` を参照。
+
+### 責務と実行契約
+
+```text
+FrmAlerts / FrmAlertRule / CampusSummaryCard
+  └─ AlertController / AlertService（直列実行・設定快照・台北定期予定）
+       ├─ IAlertQueryExecutor → Alerts/Infrastructure/KTCC/OracleAlertQueryExecutor
+       ├─ IAlertStore → EncryptedAlertStore（CurrentUser DPAPI・原子的保存）
+       ├─ IAlertNotifier → WindowsAlertNotifier（履歴IDのみのクリック引数）
+       └─ IAlertDiagnostics → JsonLinesAlertDiagnostics（既存Sanitizerによる去識別化）
+```
+
+KTCC.Core 2.0.9、既存 `KtccOracleConnectionFactory`、SELECT検証、型付きBindを再利用する。既存評価器のEXPLAINや結果上限は適用せず、Provider Readerから順次取得する。単一SELECT／WITH … SELECT、具名Bind、読取専用Transaction、必ずRollbackする経路を維持し、独自Command Timeoutは設定しない。Rollback失敗と明細保存失敗は取得エラーであり、正常0件にはしない。業務SQLの初期登録はない。
+
+台北時間で毎週・毎日・毎時間を選択し、KTGH00→HPK210→TSHISの選択院区順に実行する。`FrmAlertRule`の`cmbFrequency`で頻度を選び、毎週は`cmbDay`と`dtpTime`、毎日は`dtpTime`の時刻、毎時間は同欄の00〜59分を指定する。`AlertRule.Frequency`の既定は`Weekly = 0`で、頻度のない既存JSONも週次として復元する。毎時間の`Time`は整点からの分だけを保存する。`AlertSchedule.Latest`／`Next`を全頻度で共用し、背景の30秒確認と直列キューを利用する。新規・複製は無効保存。初回有効化前は補完せず、有効化・設定版変更後の次回予定から開始する。停止期間は直近1回のみ補完し、中断した同一設定版の予定は再実行する。固定ID・設定版・予定日時の完了水位を保持し、手動／試験／定期の実行は同じ直列キューを使用する。自動日付は予定日から、手動は操作時刻から計算し、待ち時間による日付変更を混ぜない。
+
+### 保存・画面・検証境界
+
+専用保存先は `%LOCALAPPDATA%\AutoCallGit\Alerts\`。設定・固定値・履歴・明細・去重水位をCurrentUser DPAPIで暗号化し、同一ディレクトリの暗号化済み一時ファイルから原子置換する。明細は500行分割、画面は200行ページ表示。 4つのGridは表頭クリックで昇降順を切り替え、各画面内の並び順と固定ID選択を保持する。`AlertGridData`は表示用DataTableと非表示比較キー、`ExactNumericSort`は明細数値の精度を落とさない順位を作る。院区列は状態と件数、日時は元時刻で比較し、明細は当頁のみ数値型情報に従って比較する。列名・型構成が変われば明細の並び順を解除し、保存形式とDB取得順は変えない。列名・列順・重複名・NULLを保持し、取得時点の名前・分類・院区別状態を履歴へ保存する。履歴と明細は実行開始から90日、設定と去重水位は保持する。起動・台北日次の清掃は専用保存先内に限定し、リンクを拒否する。
+
+結果カードは検索条件に合う各規則の最新結果を合算し、取得失敗・未実行／未完了を正常0件と分ける。異常または取得エラーがある実行だけ、名称・分類・院区件数の通知を一件送る。患者明細・SQL・入力値を通知や技術Logへ含めない。技術Logは `%LOCALAPPDATA%\AutoCallGit\Logs\alerts.jsonl`、保存自体の失敗も画面へ返す。
+
+`SqlOptimizer.Tests/AlertFeatureTests.cs` はFakeと隔離した実DPAPI保存、CurrentUser Pipe、STAフォーム生成を使う。`AlertScheduleFrequencyTests.cs`は三つの頻度の予定、既存JSONの互換性、加密保存・補完・再起動の去重、編集画面の入力復元を確認する。`StartupRoutingTests.cs`は通常起動と通知の表示先、Programの入口、Loadで非表示になった主画面の復元をSTAで確認する。Oracleへ接続せず、画面キャプチャも架空値だけでテスト出力へ生成する。Windows通知の実際のポップアップ・終了後クリックはRuntime導入済み端末での別確認が必要。実Oracle検証は別扱いで、Commit禁止・Rollback保証を維持する。
+
+2026-10-05の検証環境はSDK 10.0.401／.NET 8.0.31。Buildはエラー0・既存警告116、告警20件を含む通常テスト110件成功、Oracle実DBテスト1件Skip。STAでB案総覧と編集画面を生成し、重複列・NULL表示も確認した。新規・変更範囲の手書きClass／Method 151箇所はXML、引数・戻り値、UI対応、署名を静的確認した。CurrentUser PipeテストはサンドボックスのIPC制限を受けるため、専用テスト識別子で通常のWindows権限により実行した。この端末には要求されるWindows App Runtime 2.5が未導入で、実通知の表示・終了後クリックとVisual Studio内のドラッグ操作は未確認。
+
+2026-10-06は頻度追加とF5の起動経路を修正し、Build成功、全体132件成功・Oracle実DB1件Skip。頻度18件と起動経路4件を含む。独立IPC1件は通常のWindows権限で成功した。既存ファイルのBOM・改行を維持し、変更した手書き処理のXMLとUI対応を確認した。Visual Studioでの実F5操作は未確認。

@@ -18,14 +18,19 @@ using INOP1101.cls;
 namespace Project_auto_push_to_gitlab
 {
     /// <summary>
-    /// 1140617 
+    /// 顯示Oracle運作狀態及既有IDE監控入口，並將SQL告警選單委派獨立告警畫面。
     /// </summary>
+    /// <remarks>UI：Program直接建立；F5與一般重複起動顯示frm_SessionGrid，notifyIcon還原主畫面，alertsToolStripMenuItem及trayAlertsToolStripMenuItem開啟FrmAlerts。正式通知識別碼經ShowStartupWindowAsync路由至履歷。</remarks>
     public partial class frm_SessionGrid : Form
     {
         bool closeflg = false;
         private frm_SqlOptimizer? sqlOptimizerForm;
+        private Alerts.Presentation.FrmAlerts? alertsForm;
+        private bool stoppingAlerts;
 
         internal Func<frm_SqlOptimizer>? SqlOptimizerFormFactory { get; set; }
+        internal Func<Alerts.Presentation.FrmAlerts>? AlertFormFactory { get; set; }
+        internal Func<Task>? StopAlertsAsync { get; set; }
 
         public frm_SessionGrid()
         {
@@ -387,19 +392,60 @@ namespace Project_auto_push_to_gitlab
 
         }
 
-        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>先停止告警並等待讀取取消與Rollback，再執行既有正式結束流程。</summary>
+        /// <param name="sender">通知領域Close選單。</param><param name="e">事件引數。</param>
+        /// <remarks>UI：closeToolStripMenuItem直接使用；不影響關閉主畫面時的隱藏行為。</remarks>
+        private async void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            closefrm();
+            // 1151005 codex GPT-6_しずくちゃん：正式終了前に告警の接続と保存処理を停止します。
+            if (stoppingAlerts) return;
+            stoppingAlerts = true;
+            try
+            {
+                if (StopAlertsAsync is not null) await StopAlertsAsync();
+                alertsForm?.Close();
+                closefrm();
+            }
+            catch (Exception exception)
+            {
+                stoppingAlerts = false;
+                MessageBox.Show(Alerts.Core.AlertErrors.ForOperation(exception, "告警停止"), "AutoCallGit");
+            }
         }
 
+        /// <summary>由通知領域還原既有主畫面，與F5及一般重複起動共用顯示處理。</summary>
+        /// <param name="sender">notifyIcon事件來源，可為null且不使用，不變更來源物件。</param>
+        /// <param name="e">雙擊事件引數，不修改內容。</param>
+        /// <remarks>UI：frm_SessionGrid的notifyIcon直接使用，經ShowMainWindow顯示主畫面；不建立告警畫面。</remarks>
         private void notifyIcon_DoubleClick(object sender, EventArgs e)
         {
-            //讓程式在工具列中隱藏
-            this.ShowInTaskbar = false;
-            //隱藏程式本身的視窗
-            this.Show();
-            //通知欄顯示Icon
+            ShowMainWindow();
+        }
+
+        /// <summary>還原frm_SessionGrid並移至前景，讓一般起動要求不誤開SQL告警總覽。</summary>
+        /// <remarks>
+        /// UI：Program的F5或一般重複起動經ShowStartupWindowAsync間接使用；notifyIcon雙擊亦直接使用。
+        /// 顯示位置為frm_SessionGrid，維持既有ShowInTaskbar設定並隱藏notifyIcon；首次顯示仍依既有Load事件初始化。
+        /// </remarks>
+        internal void ShowMainWindow()
+        {
+            ShowInTaskbar = false;
+            WindowState = FormWindowState.Normal;
+            Show();
+            Activate();
             notifyIcon.Visible = false;
+        }
+
+        /// <summary>區分通常起動與通知履歷要求；無識別碼顯示主畫面，有識別碼才開啟告警履歷。</summary>
+        /// <param name="runId">通知履歷的Guid；null代表通常起動，不查詢告警資料或修改規則。</param>
+        /// <returns>目標畫面顯示完成的Task；履歷要求會等待既有明細讀取，通常起動直接完成。</returns>
+        /// <remarks>UI：Program的F5、重複起動及通知路由直接使用；null顯示frm_SessionGrid，非null經ShowAlertsAsync顯示FrmAlerts的dgvDetails。</remarks>
+        internal async Task ShowStartupWindowAsync(Guid? runId)
+        {
+            if (runId.HasValue)
+                await ShowAlertsAsync(runId);
+            else
+                ShowMainWindow();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -800,6 +846,27 @@ namespace Project_auto_push_to_gitlab
         {
             frm_AddWatchProgressList frm =new frm_AddWatchProgressList();
             frm.Show();
+        }
+
+        /// <summary>從告警選單開啟B案總覽，不直接執行SQL。</summary>
+        /// <param name="sender">主畫面或通知領域的告警選單。</param><param name="e">事件引數。</param>
+        /// <remarks>UI：alertsToolStripMenuItem與trayAlertsToolStripMenuItem直接使用。</remarks>
+        private async void alertsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // 1151005 codex GPT-6_しずくちゃん：主画面とトレイから同じ告警画面を開きます。
+            await ShowAlertsAsync(null);
+        }
+
+        /// <summary>建立或重用告警畫面並顯示通知指定的取得時點履歷。</summary>
+        /// <param name="runId">履歷ID；null顯示總覽，不執行新查詢。</param>
+        /// <returns>畫面與明細讀取完成Task。</returns>
+        /// <remarks>UI：alertsToolStripMenuItem、trayAlertsToolStripMenuItem及Program通知路由直接使用，顯示FrmAlerts的dgvDetails。</remarks>
+        internal async Task ShowAlertsAsync(Guid? runId)
+        {
+            // 1151005 codex GPT-6_しずくちゃん：通知クリックも既存の画面インスタンスへつなぎます。
+            if (alertsForm is null || alertsForm.IsDisposed)
+                alertsForm = AlertFormFactory?.Invoke() ?? new Alerts.Presentation.FrmAlerts();
+            await alertsForm.OpenRunAsync(runId);
         }
 
         private void sqlOptimizerToolStripMenuItem_Click(object sender, EventArgs e)
